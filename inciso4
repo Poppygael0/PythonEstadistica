@@ -1,0 +1,65 @@
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+import matplotlib.pyplot as plt
+
+# Datos proporcionados
+x = [23.2, 23.5, 23.52, 24.3, 25.1, 26.2, 27.4, 28.1, 29.3, 30.6, 31.5, 32.01, 32.63, 33.23, 33.62, 34.18, 35.43, 35.62, 36.16, 36.23, 36.89, 37.9, 39.1, 41.66]
+y = [3.78, 4.12, 4.24, 5.35, 5.87, 6.02, 6.12, 6.41, 6.62, 6.43, 6.13, 5.92, 5.64, 5.45, 5.21, 4.98, 4.65, 4.5, 4.34, 4.03, 3.92, 3.65, 3.02, 2.89]
+
+# DataFrame
+df = pd.DataFrame({'x': x, 'y': y})
+
+# Creando las características cúbicas y cuadráticas
+df['x^2'] = df['x']**2
+df['x^3'] = df['x']**3
+
+# Regresión cúbica
+X_cubic = df[['x', 'x^2', 'x^3']]
+X_cubic = sm.add_constant(X_cubic)
+model_cubic = sm.OLS(df['y'], X_cubic).fit()
+
+print(model_cubic.summary())
+
+# Proporción de la variación explicada por el modelo cúbico
+r_squared_cubic = model_cubic.rsquared
+print(f'R-squared para el modelo cúbico: {r_squared_cubic}')
+
+# Regresión cuadrática
+X_quad = df[['x', 'x^2']]
+X_quad = sm.add_constant(X_quad)
+model_quad = sm.OLS(df['y'], X_quad).fit()
+
+print(model_quad.summary())
+
+# Proporción de la variación explicada por el modelo cuadrático
+r_squared_quad = model_quad.rsquared
+print(f'R-squared para el modelo cuadrático: {r_squared_quad}')
+
+# Genera valores x para la curva ajustada
+x_values = np.linspace(min(df['x']), max(df['x']), 100)
+
+# Genera los valores y correspondientes de la curva ajustada para cada modelo
+y_values_cubic = model_cubic.params[0] + model_cubic.params[1]*x_values + model_cubic.params[2]*x_values**2 + model_cubic.params[3]*x_values**3
+y_values_quad = model_quad.params[0] + model_quad.params[1]*x_values + model_quad.params[2]*x_values**2
+
+# Crea la figura y el eje
+fig, ax = plt.subplots()
+
+# Grafica los datos originales como puntos
+ax.scatter(df['x'], df['y'], color='blue', label='Datos')
+
+# Grafica las curvas ajustadas
+ax.plot(x_values, y_values_cubic, color='red', label='Modelo cúbico ajustado')
+ax.plot(x_values, y_values_quad, color='green', label='Modelo cuadrático ajustado')
+
+# Añade un título y etiquetas a los ejes
+ax.set_title('Regresión cúbica y cuadrática ajustadas a los datos')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+
+# Añade una leyenda
+ax.legend()
+
+# Muestra la figura
+plt.show()
